@@ -1,0 +1,18 @@
+{
+    "name": "jefyokta/docx2json",
+    "description": "Internal Package to parse docx document to tiptap hightex json",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "Jefyokta\\Docx2json\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Jepi Oktamipa",
+            "email": "jefyokta50@gmail.com"
+        }
+    ],
+    "require": {}
+}
