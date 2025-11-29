@@ -4,10 +4,19 @@ namespace Jefyokta\Docx2json;
 
 use DOMDocument;
 use DOMElement;
-use DOMNode;
-use Error;
+use Jefyokta\Docx2json\Context\Citation as CitationContext;
+use Jefyokta\Docx2json\Context\Heading as HeadingContext;
 use Jefyokta\Docx2json\Exception\StyleOrReelsUndifined;
 use Jefyokta\Docx2json\Node\Image;
+use Jefyokta\Docx2json\Node\BaseNode;
+use Jefyokta\Docx2json\Node\Cite;
+use Jefyokta\Docx2json\Node\FigCaption;
+use Jefyokta\Docx2json\Node\Heading;
+use Jefyokta\Docx2json\Node\OrderedList;
+use Jefyokta\Docx2json\Node\Paragraph;
+use Jefyokta\Docx2json\Node\Table;
+use Jefyokta\Docx2json\Node\Text;
+use Jefyokta\Docx2json\Utils\Element;
 use ZipArchive;
 
 class Parser
@@ -17,6 +26,7 @@ class Parser
     static ?DOMDocument $document = null;
     private $documentType = 'proposal';
     private static $chapters;
+    public static ?string $documentPath;
 
     private $proposalChapters = [
         "pendahuluan" => [],
@@ -26,10 +36,14 @@ class Parser
 
     ];
 
-    private $headings = [];
+    public static $headings = [];
+
+
+    private $maxChapter = 4;
+
+    private $chapterId;
 
     private $thesisChapters = [
-
         "pendahuluan" => [],
         "landasan_teori" => [],
         "metode_penelitian" => [],
@@ -42,6 +56,8 @@ class Parser
     public function __construct($doc = null, $type = 'proposal')
     {
         $this->documentType = $type;
+        $doc && static::$documentPath = $doc;
+
         if (!self::$chapters) {
             self::$chapters =  $this->documentType == 'proposal' ? $this->proposalChapters : $this->thesisChapters;
         }
@@ -54,11 +70,20 @@ class Parser
         $this->collectHeading();
     }
 
-    public function reset()
+    function setMaxChapter(int $count)
+    {
+
+        $this->maxChapter = $count;;
+    }
+
+    public static function reset()
     {
         static::$document = null;
         static::$styles = null;
         static::$rels = null;
+        HeadingContext::reset();
+
+        CitationContext::reset();
     }
 
     protected  function extractDocument($doc = null)
@@ -71,7 +96,6 @@ class Parser
         $documentXml = $zip->getFromName('word/document.xml');
         $stylesXml   = $zip->getFromName('word/styles.xml');
         $relsXml     = $zip->getFromName('word/_rels/document.xml.rels');
-        $zip->extractTo("documents");
         $zip->close();
 
         static::$document = new DOMDocument();
@@ -87,121 +111,138 @@ class Parser
     }
 
 
-    public function parse(DOMNode | array $nodes): array
+    function export(): array
+    {
+        $tmp = [];
+        $currentHeading = -1;
+        $collected = [];
+
+        $body = static::$document->getElementsByTagName("body")->item(0);
+
+        if (!$body) {
+            return [];
+        }
+
+        foreach ($body->childNodes as $child) {
+
+            if (!$child || $child->nodeType !== XML_ELEMENT_NODE) {
+                continue;
+            }
+
+
+            if ($this->isChapter($child)) {
+
+                if (($currentHeading + 1) >= $this->maxChapter) {
+                    break;
+                }
+
+                if ($currentHeading !== -1) {
+                    $collected[$currentHeading]['content'] = $tmp;
+                }
+
+                $currentHeading++;
+
+
+                $collected[$currentHeading] = [
+                    "chapter" => trim($child->textContent),
+                    "content" => []
+                ];
+
+                $tmp = [];
+                continue;
+            }
+
+            if ($currentHeading > -1) {
+                $tmp[] = $child;
+            }
+        }
+
+        if ($currentHeading !== -1) {
+            $collected[$currentHeading]['content'] = $tmp;
+        }
+        $collected = array_map(function ($item) {
+            $item['content'] = $this->parse($item['content']);
+            return $item;
+        }, $collected);
+
+        return $collected;
+    }
+
+
+
+    protected function isChapter(DOMElement $node)
+    {
+
+        $node->nodeName == "w:p";
+        $pstyle =  Element::create($node)->querySelector("w:pStyle");
+        // var_dump($this->chapterId);
+        return $pstyle && ($h = $pstyle->getAttribute("w:val"))
+            && $h == $this->chapterId;
+    }
+
+    public function parse(iterable $nodes): array
     {
         $children = [];
 
         /** @var \DOMElement */
-        foreach (($nodes instanceof DOMNode ? $nodes->childNodes : $nodes) as $child) {
+        $ignore = 0;
+        foreach (($nodes) as $child) {
             if (!$child || $child->nodeType !== XML_ELEMENT_NODE) continue;
-
+            if ($ignore > 0) {
+                $ignore--;
+                continue;
+            }
             if ($child->nodeName == 'w:p') {
-                $ignore = false;
-
-                if ($ignore) {
-                    continue;
-                    $ignore = false;
-                }
-                /** @var class-string<BaseNode> */
-                foreach ($this->getParserClasses()['childOfP'] as $class) {
+                foreach ($this->getParserClasses()["start_with_p"] as $class) {
                     $parser = new $class($child);
-
                     if ($parser->assert()) {
-                        $ignore = $parser->ignoreNext;
+                        $children[] =   $parser->render()->getJsonArray();
+                        $ignore += $parser->ignoreNext;
+                        break;
+                    }
+                }
+            } else {
+                foreach ($this->getParserClasses()['stand_alone'] as $class) {
+                    $parser = new $class($child);
+                    if ($parser->assert()) {
+                        $ignore += $parser->ignoreNext;
                         $children[] =   $parser->render()->getJsonArray();
                     }
                 }
             }
         }
-        // $this->reset();
         return $children;
     }
-
+    /**
+     * @return array<"start_with_p"|"stand_alone",class-string<BaseNode>[]>
+     */
     function getParserClasses(): array
     {
-        /** @var class-string<BaseNode>[] */
-        $childOfp =  [Image::class];
-        /** @var class-string<BaseNode>[] */
+        $childOfp =  [Image::class, Heading::class, Cite::class, OrderedList::class,  Paragraph::class];
+        $standAlone = [Table::class, Cite::class, OrderedList::class, Text::class];
 
-        $standAlone = [];
         return [
-            "childOfP" => $childOfp,
-            "standAlone" => $standAlone
+            "start_with_p" => $childOfp,
+            "stand_alone" => $standAlone
         ];
     }
 
-
-    function fillChapters()
-    {
-        static::$document;
-    }
-
-    private function getChapterKeys()
-    {
-        return array_keys($this->chapters);
-    }
-
-
     private function collectHeading()
     {
-        $this->headings = [];
 
         foreach (static::$styles->getElementsByTagName("style") as $node) {
-
             $id = $node->getAttribute("w:styleId");
 
             $outline = $node->getElementsByTagName("outlineLvl");
-
             if ($outline->length > 0) {
                 $lvl = (int)$outline->item(0)->getAttribute("w:val");
-                if (($lvl + 1 <= 4)) {
-                    $this->headings[$id] = $lvl + 1;
+                if ($lvl == 0) {
+                    $this->chapterId = $id;
+                }
+                if (($lvl > 0  && $lvl + 1 <= 4)) {
+                    HeadingContext::set($id, $lvl + 1);
                 }
             }
         }
-    }
-
-    function collectUntilNextHeading($startIndex, $nodes)
-    {
-        $collected = [];
-
-        $count = count($nodes);
-        for ($i = $startIndex + 1; $i < $count; $i++) {
-            $node = $nodes[$i];
-            if ($node->nodeName === 'w:p') {
-                $style = $this->getParagraphStyle($node);
-                if ($style && str_starts_with($style, $this->getHeadingKey())) {
-                    break;
-                }
-            }
-
-            $collected[] = $node;
-        }
-
-        return $collected;
-    }
-    function getParagraphStyle(DOMElement $p)
-    {
-        foreach ($p->getElementsByTagName('pPr') as $pPr) {
-            foreach ($pPr->getElementsByTagName('pStyle') as $style) {
-                return $style->getAttribute('w:val');
-            }
-        }
-        return null;
-    }
-
-    private function getHeadingKey($level = 1)
-    {
-        $k = '';
-        foreach ($this->headings as $key => $value) {
-            if ($value == $level) {
-                $k = $key;
-                break;
-            }
-        }
-
-
-
-        return $k;
     }
 }
