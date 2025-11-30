@@ -218,7 +218,7 @@ class Parser
      */
     function getParserClasses(): array
     {
-        $childOfp =  [Image::class, Heading::class, Cite::class, OrderedList::class,  Paragraph::class];
+        $childOfp =  [Image::class, Heading::class, FigCaption::class, Cite::class, OrderedList::class,  Paragraph::class];
         $standAlone = [Table::class, Cite::class, OrderedList::class, Text::class];
 
         return [

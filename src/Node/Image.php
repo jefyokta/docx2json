@@ -28,7 +28,7 @@ class Image extends BaseNode
     }
 
 
-    public function parse()
+    protected function parse()
     {
 
         $el = Element::create($this->imgNode);
@@ -55,6 +55,8 @@ class Image extends BaseNode
             $this->shouldBeFigure = true;
             $this->name = "imageFigure";
             $this->ignoreNext = 1;
+            $this->attrs->figureId = $cap->getId();
+            $this->attrs->id = $cap->getId();
             $this->hasChildren = true;
             $this->content = [
                 [

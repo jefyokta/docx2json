@@ -10,7 +10,7 @@ class Heading extends BaseNode
 {
     protected string $name = "heading";
 
-    public function parse()
+    protected function parse()
     {
         $runners = Element::create($this->rootNode)->querySelectorAll("w:r");
         foreach ($runners as $i => $runner) {

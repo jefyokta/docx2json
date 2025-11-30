@@ -31,7 +31,7 @@ class FigCaption extends BaseNode
 
         return $next && ($this->table = new Table($next))->assert();
     }
-    public function parse()
+    protected function parse()
     {
         $keep = [];
         $endIndex = -1;
@@ -76,7 +76,17 @@ class FigCaption extends BaseNode
             "content" => [
                 parent::getJsonArray(),
                 $this->table->render()->getJsonArray()
+            ],
+            "attrs" => [
+                "id" => $this->getId(),
+                "figureId" => $this->getId()
             ]
         ];
+    }
+
+
+    function getId()
+    {
+        return Element::create($this->rootNode)->querySelector("s:bookmarkStart")?->getAttribute("w:name") ?? uniqid();
     }
 }

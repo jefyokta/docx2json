@@ -17,7 +17,7 @@ class Paragraph extends BaseNode
         return $this->rootNode->nodeName == "w:p";
     }
 
-    public function parse()
+    protected function parse()
     {
         $runners = [];
 

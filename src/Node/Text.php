@@ -20,7 +20,7 @@ class Text extends BaseNode
         return  $this->rootNode->nodeName == "w:r";
     }
 
-    public function parse()
+    protected function parse()
     {
 
         $el = Element::create($this->rootNode);
@@ -45,7 +45,7 @@ class Text extends BaseNode
             "strike"        => fn(Element $node) => $node->querySelector("w:strike"),
             "superscript"   => fn(Element $node) => ($e = $node->querySelector("w:vertAlign")) && $e->getAttribute("w:val") === "superscript",
             "subscript"     => fn(Element $node) => ($e = $node->querySelector("w:vertAlign"))  && $e->getAttribute("w:val") === "subscript",
-            "code"          => fn(Element $node) => $node->querySelectorAll("w:rStyle")[0]?->getAttribute("w:val") ?? "" === "Code",
+            // "code"          => fn(Element $node) => ($s = $node->querySelectorAll("w:rStyle") )[0]?->getAttribute("w:val") ?? "" === "Code",
         ];
     }
 }

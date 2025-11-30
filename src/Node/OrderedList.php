@@ -30,7 +30,7 @@ class OrderedList extends BaseNode
         return isset($ilvl) && isset($numId);
     }
 
-    public function parse(): void
+    protected function parse(): void
     {
         $next = $this->rootNode;
 

@@ -17,7 +17,7 @@ class ListItem extends BaseNode
 
         return isset($numId);
     }
-    public function parse()
+    protected function parse()
     {
         Element::create($this->rootNode)->findChildNode("w:pPr")?->remove();
     }

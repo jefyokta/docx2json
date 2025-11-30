@@ -169,7 +169,8 @@ class Element
         $el = $this->querySelector($nodeName);
         return $el?->textContent ?: null;
     }
-    function styleNode(){
+    function styleNode()
+    {
         return $this->querySelector("w:pStyle");
     }
 }

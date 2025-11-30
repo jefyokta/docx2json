@@ -55,7 +55,7 @@ abstract class BaseNode
         $this->parse();
         return $this;
     }
-    function  parse() {}
+    protected function  parse() {}
 
     function getJsonArray()
     {
