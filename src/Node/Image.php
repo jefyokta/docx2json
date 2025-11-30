@@ -110,6 +110,6 @@ class Image extends BaseNode
 
         $base64 = base64_encode($binary);
 
-        return "data:$mime;base64,";
+        return "data:$mime;base64,$base64";
     }
 }

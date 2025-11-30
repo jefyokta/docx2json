@@ -12,6 +12,8 @@ class Text extends BaseNode
 
     protected string $name = "text";
     protected $hasAttributes = false;
+    public $hasChildren =false;
+    protected $marks = [];
 
     private ?DOMElement $textNode;
     public function assert(): bool
