@@ -29,8 +29,10 @@ class Paragraph extends BaseNode
         };
 
 
-        $text = (new Parser())->parse($runners);
-        $this->content[]=$text;
+        $texts = (new Parser())->parse($runners);
+        foreach ($texts as $text) {
+            $this->content[]=$text;
+        }
 
     }
 
