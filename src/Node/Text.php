@@ -31,6 +31,7 @@ class Text extends BaseNode
                 if (!$this->marks) {
                     $this->marks = [];
                 }
+                
                 $this->marks[] = ["type" => $key];
             }
         };

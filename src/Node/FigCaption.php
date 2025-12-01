@@ -87,6 +87,6 @@ class FigCaption extends BaseNode
 
     function getId()
     {
-        return Element::create($this->rootNode)->querySelector("s:bookmarkStart")?->getAttribute("w:name") ?? uniqid();
+        return Element::create($this->rootNode)->querySelector("s:bookmarkStart")?->getAttribute("w:name") ?? uniqid('figure');
     }
 }
