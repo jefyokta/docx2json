@@ -14,5 +14,7 @@
             "email": "jefyokta50@gmail.com"
         }
     ],
-    "require": {}
+    "require": {
+        "ueberdosis/pandoc": "^0.9.0"
+    }
 }

@@ -91,6 +91,7 @@ class Table extends BaseNode
         }
 
         $rowHeader = $this->rows[0] ?? null;
+
         if ($rowHeader && $this->inFigure) {
             $maxHeaderRows = $rowHeader->getMaxRowspan();
 
@@ -115,6 +116,7 @@ class Table extends BaseNode
     }
 
     function insideFigure(){
-        $this->inFigure =true;
+        $this->inFigure = true;
+        return $this;
     }
 }

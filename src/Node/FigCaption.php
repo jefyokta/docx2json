@@ -27,10 +27,22 @@ class FigCaption extends BaseNode
     private function shoulBeMergeWithTable()
     {
 
-        $next = $this->rootNode->nextElementSibling;
-
-        return $next && ($this->table = new Table($next))->assert();
+      
+        $next = $this->getAValidNextNode($this->rootNode->nextElementSibling);
+     
+        return  $next && ($this->table = (new Table($next))->insideFigure())->assert();
     }
+
+    private function getAValidNextNode($next = null)
+    {
+        if ($next && $next->nodeName == 'w:p' && trim($next->textContent) !== '') {
+            $next = $this->getAValidNextNode($next->nextElementSibling);
+        }
+
+        return $next;
+    }
+
+
     protected function parse()
     {
         $keep = [];
@@ -75,7 +87,7 @@ class FigCaption extends BaseNode
             "type" => "figureTable",
             "content" => [
                 parent::getJsonArray(),
-                $this->table->render()->getJsonArray()
+                $this->table->insideFigure()->render()->getJsonArray()
             ],
             "attrs" => [
                 "id" => $this->getId(),

@@ -12,14 +12,15 @@ class Text extends BaseNode
 
     protected string $name = "text";
     protected $hasAttributes = false;
-    public $hasChildren =false;
+    public $hasChildren = false;
     protected $marks = [];
+    private $prefix = "w";
 
-    private ?DOMElement $textNode;
     public function assert(): bool
     {
-        $this->text = $this->rootNode->textContent;;
-        return  $this->rootNode->nodeName == "w:r";
+        $this->text = $this->rootNode->textContent;
+
+        return  $this->rootNode->nodeName == $this->prefix . ":r";
     }
 
     protected function parse()
@@ -31,9 +32,54 @@ class Text extends BaseNode
                 if (!$this->marks) {
                     $this->marks = [];
                 }
-                
+
                 $this->marks[] = ["type" => $key];
             }
+        };
+    }
+
+    function getText()
+    {
+
+        return $this->getJsonArray()["text"] ?? "";
+    }
+
+    function getAsLatex(): string
+    {
+        $data = $this->getJsonArray();
+        $text = $data['text'];
+
+        if (trim($text) == "") {
+            return "";
+        }
+
+        $marks = $data['marks'];
+
+        $latex = $text;
+
+        foreach ($marks as $markType) {
+            $latex .= $this->getMarkLatex($markType['type'], $latex);
+        }
+
+        return $latex;
+    }
+    function asMath()
+    {
+        $this->prefix = "m";
+        return $this;
+    }
+
+    private function getMarkLatex(string $type, string $content): string
+    {  
+
+        return match ($type) {
+            "bold"          => "\\textbf{" . $content . "}",
+            "italic"        => "\\textit{" . $content . "}",
+            "underline"     => "\\underline{" . $content . "}",
+            "strike"        => "\\sout{" . $content . "}",
+            "superscript"   => "^{" . $content . "}",
+            "subscript"     => "_{" . $content . "}",
+            default         => $content,
         };
     }
 

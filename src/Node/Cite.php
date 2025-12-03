@@ -31,6 +31,9 @@ class Cite extends BaseNode
         $next = $this->rootNode;
         while ($next instanceof DOMElement) {
             $next =  $next->nextSibling;
+            if (!$next) {
+                break;
+            }
             $ignore++;
             $el = Element::create($next);
 

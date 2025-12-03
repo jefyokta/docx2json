@@ -10,6 +10,7 @@ use Jefyokta\Docx2json\Exception\StyleOrReelsUndifined;
 use Jefyokta\Docx2json\Node\Image;
 use Jefyokta\Docx2json\Node\BaseNode;
 use Jefyokta\Docx2json\Node\Cite;
+use Jefyokta\Docx2json\Node\Equation;
 use Jefyokta\Docx2json\Node\FigCaption;
 use Jefyokta\Docx2json\Node\Heading;
 use Jefyokta\Docx2json\Node\OrderedList;
@@ -36,13 +37,14 @@ class Parser
 
     ];
 
+
     public static $headings = [];
 
 
     private $maxChapter = 4;
 
     private $chapterId;
-
+    private $excludedHeading = [];
     private $thesisChapters = [
         "pendahuluan" => [],
         "landasan_teori" => [],
@@ -73,7 +75,12 @@ class Parser
     function setMaxChapter(int $count)
     {
 
-        $this->maxChapter = $count;;
+        $this->maxChapter = $count;
+    }
+
+    function excludeHeadingWithTextContent($texts = [])
+    {
+        $this->excludedHeading = $texts;
     }
 
     public static function reset()
@@ -110,6 +117,25 @@ class Parser
         static::$rels->loadXML($relsXml);
     }
 
+    function showChapters()
+    {
+        $body = static::$document->getElementsByTagName("body")->item(0);
+        if (!$body) {
+            return [];
+        }
+        $chapters = [];
+        foreach ($body->childNodes as $child) {
+            if (!$child || $child->nodeType !== XML_ELEMENT_NODE) {
+                continue;
+            }
+            if ($this->isChapter($child)) {
+                $chapters[] = trim($child->textContent);
+            }
+        }
+
+        return $chapters;
+    }
+
 
     function export(): array
     {
@@ -122,15 +148,16 @@ class Parser
         if (!$body) {
             return [];
         }
-
         foreach ($body->childNodes as $child) {
 
             if (!$child || $child->nodeType !== XML_ELEMENT_NODE) {
                 continue;
             }
 
-
             if ($this->isChapter($child)) {
+                if (in_array(str_replace(" ", "", strtolower($child->textContent)), $this->excludedHeading)) {
+                    continue;
+                }
 
                 if (($currentHeading + 1) >= $this->maxChapter) {
                     break;
@@ -175,7 +202,6 @@ class Parser
 
         $node->nodeName == "w:p";
         $pstyle =  Element::create($node)->querySelector("w:pStyle");
-        // var_dump($this->chapterId);
         return $pstyle && ($h = $pstyle->getAttribute("w:val"))
             && $h == $this->chapterId;
     }
@@ -196,7 +222,13 @@ class Parser
                 foreach ($this->getParserClasses()["start_with_p"] as $class) {
                     $parser = new $class($child);
                     if ($parser->assert()) {
-                        $children[] =   $parser->render()->getJsonArray();
+                        if (!$parser->isGroup) {
+                            $children[] =  $parser->render()->getJsonArray();
+                        } else {
+                            foreach ($parser->render()->getJsonArray()['content'] as $p) {
+                                $children[] =  $p;
+                            }
+                        }
                         $ignore += $parser->ignoreNext;
                         break;
                     }
@@ -207,6 +239,7 @@ class Parser
                     if ($parser->assert()) {
                         $ignore += $parser->ignoreNext;
                         $children[] =   $parser->render()->getJsonArray();
+                        break;
                     }
                 }
             }
@@ -218,8 +251,8 @@ class Parser
      */
     function getParserClasses(): array
     {
-        $childOfp =  [Image::class, Heading::class, FigCaption::class, Cite::class, OrderedList::class,  Paragraph::class];
-        $standAlone = [Table::class, Cite::class, OrderedList::class, Text::class];
+        $childOfp =  [Image::class, Equation::class, Heading::class, FigCaption::class, Cite::class, OrderedList::class,  Paragraph::class];
+        $standAlone = [Table::class, Cite::class,  OrderedList::class, Text::class];
 
         return [
             "start_with_p" => $childOfp,

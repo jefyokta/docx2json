@@ -100,14 +100,13 @@ class TableRow extends BaseNode
 
     function mutateAllCellsToHeader()
     {
-        foreach ($this->cells as $cell) {
+        foreach ($this->cells as &$cell) {
             $cell->mutateToHeader();
         }
     }
 
     private function removeMergeCell()
     {
-
         $cells = [];
         foreach ($this->cells as $cell) {
             if (!$cell->isRowMerge()) {

@@ -33,6 +33,8 @@ abstract class BaseNode
 
     protected $hasAttributes = true;
 
+    public bool   $isGroup = false;
+
     public int $ignoreNext = 0;
 
     /**
@@ -43,7 +45,6 @@ abstract class BaseNode
     public function __construct(protected DOMElement $rootNode)
     {
         // $this->node = $node;
-
         $this->attrs = new Attributes;
     }
 
