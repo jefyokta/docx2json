@@ -11,7 +11,7 @@ class TableRow extends BaseNode
     private $cells = [];
     private $widths = [];
     protected string $name = "tableRow";
-
+    protected $filterContent = true;
     private $cellRowspan = [];
 
 
@@ -31,7 +31,7 @@ class TableRow extends BaseNode
 
         foreach ($this->cells as $i => $cell) {
             $colspan = (int) $cell->getColspan();
-            $take = $colspan; 
+            $take = $colspan;
 
             $w = [];
 
@@ -124,5 +124,10 @@ class TableRow extends BaseNode
             $max = $max < ($n = $cell->getRowspan()) ? $n : $max;
         };
         return $max;
+    }
+
+    public function allowedContent()
+    {
+        return ["tableCell", "tableHeader"];
     }
 };

@@ -66,10 +66,11 @@ class Image extends BaseNode
                         "width" => $this->attrs->width
                     ]
                 ],
-                $cap->render()->getJsonArray()
+                $cap->mergeWithImage()->render()->getJsonArray()
 
             ];
             $this->attrs = new Attributes;
+            $this->filterContent = true;
         }
     }
     public function assert(): bool
@@ -89,6 +90,11 @@ class Image extends BaseNode
         };
 
         return null;
+    }
+
+    public function allowedContent()
+    {
+        return ["figcaption", "image"];
     }
 
     private function toBase64(string $img): ?string

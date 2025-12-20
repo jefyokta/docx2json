@@ -96,7 +96,7 @@ class Table extends BaseNode
             $maxHeaderRows = $rowHeader->getMaxRowspan();
 
             foreach ($this->rows as $i => &$row) {
-                if ($i > $maxHeaderRows) {
+                if ($i >= ($maxHeaderRows)) {
                     break;
                 }
                 $row->mutateAllCellsToHeader();
@@ -118,5 +118,10 @@ class Table extends BaseNode
     function insideFigure(){
         $this->inFigure = true;
         return $this;
+    }
+
+    public function allowedContent()
+    {
+        return ["tableRow"];
     }
 }

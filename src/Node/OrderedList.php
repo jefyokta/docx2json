@@ -9,7 +9,7 @@ class OrderedList extends BaseNode
 {
     protected string $name = "orderedList";
 
-
+    protected $filterContent = true;
     /**
      * @var ListItem[]
      */
@@ -49,5 +49,10 @@ class OrderedList extends BaseNode
         foreach ($this->lists as $list) {
             $this->content[] = $list->render()->getJsonArray();
         }
+    }
+
+    public function allowedContent()
+    {
+        return ["listItem"];
     }
 }

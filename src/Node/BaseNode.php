@@ -37,6 +37,8 @@ abstract class BaseNode
 
     public int $ignoreNext = 0;
 
+    protected $filterContent = false;
+
     /**
      * tag: <w:p>
      * @param  $node
@@ -47,6 +49,8 @@ abstract class BaseNode
         // $this->node = $node;
         $this->attrs = new Attributes;
     }
+
+
 
     function render(): static
     {
@@ -64,7 +68,14 @@ abstract class BaseNode
             "type" => $this->name,
         ];
         if (false !== $this->hasChildren) {
-            $json['content'] =  $this->content ? $this->content : ($this->hasChildren ? (new Parser())->parse($this->rootNode->childNodes) : []);
+            $content = $this->content ? $this->content : ($this->hasChildren ? (new Parser())->parse($this->rootNode->childNodes) : []);
+            if ($this->filterContent) {
+                $json['content'] =  array_filter($content, function ($value) {
+                    return in_array($value['type'], $this->allowedContent());
+                }, ARRAY_FILTER_USE_BOTH);
+            } else {
+                $json['content'] =  $content;
+            }
         }
         if (false !== $this->marks) {
             $json['marks'] = $this->marks;
@@ -83,5 +94,10 @@ abstract class BaseNode
     {
 
         return false;
+    }
+
+    function allowedContent()
+    {
+        return [];
     }
 };

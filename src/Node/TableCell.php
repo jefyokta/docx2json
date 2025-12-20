@@ -38,7 +38,7 @@ class TableCell extends BaseNode
             $this->isRowspanStart = ($el->querySelector("w:vMerge")?->getAttribute("w:val") == "restart");
             $this->attrs->colspan = $colspan;
             $this->attrs->rowspan = $this->attrs->rowspan ? $this->attrs->rowspan : 1;
-            $this->attrs->width = count($width) !== 0 ? $width : $this->widths;;
+            $this->attrs->colwidth = count($width) !== 0 ? $width : $this->widths;;
         }
     }
 

@@ -9,10 +9,12 @@ use Jefyokta\Docx2json\Utils\Element;
 class Heading extends BaseNode
 {
     protected string $name = "heading";
+    protected $filterContent = true;
 
     protected function parse()
     {
         $runners = Element::create($this->rootNode)->querySelectorAll("w:r");
+        $this->attrs->id= uniqid("heading-");
         foreach ($runners as $i => $runner) {
             $text = trim($runner->textContent ?? '');
             if ($text == '') {
@@ -44,5 +46,9 @@ class Heading extends BaseNode
             return true;
         }
         return false;
+    }
+    public function allowedContent()
+    {
+        return ["text"];
     }
 };

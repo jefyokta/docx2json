@@ -39,7 +39,7 @@ class Cite extends BaseNode
 
             $instr =  $el->querySelector("w:instrText");
             if (
-                $instr && str_contains($instr->textContent, "CITATION") &&
+                $instr && str_contains($instr->textContent, "CSL_CITATION") &&
                 ($jsnStart = strpos($instr->textContent ?? "", "{")) !== false
             ) {
                 $json = substr($instr->textContent, $jsnStart);
@@ -49,12 +49,12 @@ class Cite extends BaseNode
                 if (!$data) {
                     break;
                 }
-                $key = $data["citationID"] ?? false;
-
                 $items = $data["citationItems"][0] ?? false;
                 if (!$items) {
                     break;
                 }
+                $key = $items['citation-key'] ?? $data["citationID"] ??  uniqid('cite-');
+
                 $itemData = $items["itemData"] ?? false;
 
 

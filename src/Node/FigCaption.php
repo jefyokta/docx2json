@@ -12,6 +12,8 @@ class FigCaption extends BaseNode
 
     protected string $name = "figcaption";
 
+    private $hasBeenMergedWithImage = false;
+
 
     private ?Table $table;
     public function assert(): bool
@@ -23,13 +25,22 @@ class FigCaption extends BaseNode
 
         return false;
     }
+    function mergeWithImage()
+    {
+
+        $this->hasBeenMergedWithImage = true;
+
+        return $this;
+    }
 
     private function shoulBeMergeWithTable()
     {
+        if ($this->hasBeenMergedWithImage) {
+            return false;
+        }
 
-      
         $next = $this->getAValidNextNode($this->rootNode->nextElementSibling);
-     
+
         return  $next && ($this->table = (new Table($next))->insideFigure())->assert();
     }
 
@@ -86,7 +97,10 @@ class FigCaption extends BaseNode
         return [
             "type" => "figureTable",
             "content" => [
-                parent::getJsonArray(),
+                [
+                    "type" => $this->name,
+                    "content" => $this->content,
+                ],
                 $this->table->insideFigure()->render()->getJsonArray()
             ],
             "attrs" => [

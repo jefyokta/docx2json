@@ -27,11 +27,7 @@ class Paragraph extends BaseNode
             }
             $runners[] = $e;
         };
-
-
         $this->content = (new Parser())->parse($runners);
-    
-
     }
 
 
