@@ -2,6 +2,7 @@
 
 namespace Jefyokta\Docx2json\Node;
 
+use Jefyokta\Docx2json\Context\Warning;
 use Jefyokta\Docx2json\Utils\Element;
 use Jefyokta\Docx2json\Utils\OOMLTranslator;
 
@@ -40,6 +41,7 @@ class Equation extends BaseNode
                 ]
             ];
         }
+        Warning::set($this->name,"Your Equation may not rendered correctly, please check and rewrite it with latex!");
 
         // $this->attrs->latex = "please \ rewrite \ your \ equation with \ \LaTeX";
     }

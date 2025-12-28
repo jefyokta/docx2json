@@ -67,7 +67,7 @@ class Cite extends BaseNode
                 $citation = new Citation($key, $itemData);
                 
                 ContextCitation::add($citation);
-                $this->attrs->cite = $key;
+                $this->attrs->cite = $citation->getKey();
                 $this->attrs->citeA = ($c = $data["properties"]["formattedCitation"] ?? false) && strpos($c, "(") == 0 ? true : false;
                 $isCite = true;
             }

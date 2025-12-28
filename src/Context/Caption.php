@@ -2,7 +2,9 @@
 
 namespace Jefyokta\Docx2json\Context;
 
-class Caption {
+use Jefyokta\Docx2json\Contract\Context;
+
+class Caption implements Context{
 
     private static $captionStyleId = "Caption";
 

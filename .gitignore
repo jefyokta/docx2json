@@ -7,3 +7,11 @@ test.json
 result.json
 chapters.json
 *.docx
+cibin.json
+citation.json
+
+csl.json
+
+*-citation.json
+*-doc.json
+devi.json

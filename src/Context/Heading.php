@@ -2,9 +2,10 @@
 
 namespace Jefyokta\Docx2json\Context;
 
+use Jefyokta\Docx2json\Contract\Context;
 use Jefyokta\Docx2json\Contract\Resetable;
 
-class Heading implements Resetable
+class Heading implements Resetable,Context
 {
 
     /**

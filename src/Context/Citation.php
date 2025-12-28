@@ -2,12 +2,16 @@
 
 namespace Jefyokta\Docx2json\Context;
 
+use Jefyokta\Docx2json\Contract\Context;
 use Jefyokta\Docx2json\Contract\Resetable;
 use Jefyokta\Docx2json\Utils\Citation as UtilsCitation;
 
-class Citation implements Resetable
+class Citation implements Resetable, Context
 {
 
+    /**
+     * @var UtilsCitation[]
+     */
     private static $cites = [];
 
     function get() {}
@@ -17,9 +21,14 @@ class Citation implements Resetable
         self::$cites[] = $citation;
     }
 
-    static function getAll(){
+    static function getAll()
+    {
+        $merged = [];
+        foreach (self::$cites as $cite) {
+            $merged[$cite->getKey()] = $cite->getBib();
+        }
 
-        return self::$cites;
+        return $merged;
     }
 
     public static function reset()

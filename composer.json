@@ -15,5 +15,6 @@
         }
     ],
     "require": {
+        "seboettg/citeproc-php": "^2.7"
     }
 }

@@ -80,7 +80,7 @@ class Parser
 
     function excludeHeadingWithTextContent($texts = [])
     {
-        $this->excludedHeading = $texts;
+        $this->excludedHeading = array_map(fn($t) => str_replace(" ","",strtolower($t)), $texts);
     }
 
     public static function reset()

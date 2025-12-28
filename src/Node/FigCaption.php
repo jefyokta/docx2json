@@ -13,7 +13,7 @@ class FigCaption extends BaseNode
     protected string $name = "figcaption";
 
     private $hasBeenMergedWithImage = false;
-
+    protected $filterContent = true;
 
     private ?Table $table;
     public function assert(): bool
@@ -99,7 +99,7 @@ class FigCaption extends BaseNode
             "content" => [
                 [
                     "type" => $this->name,
-                    "content" => $this->content,
+                    "content" => parent::getJsonArray()["content"],
                 ],
                 $this->table->insideFigure()->render()->getJsonArray()
             ],
@@ -108,6 +108,11 @@ class FigCaption extends BaseNode
                 "figureId" => $this->getId()
             ]
         ];
+    }
+
+    public function allowedContent()
+    {
+        return ["paragraph"];
     }
 
 

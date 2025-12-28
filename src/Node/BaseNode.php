@@ -71,7 +71,7 @@ abstract class BaseNode
             $content = $this->content ? $this->content : ($this->hasChildren ? (new Parser())->parse($this->rootNode->childNodes) : []);
             if ($this->filterContent) {
                 $json['content'] =  array_filter($content, function ($value) {
-                    return in_array($value['type'], $this->allowedContent());
+                    return is_array($value) && in_array(isset($value['type']) ? $value['type'] : "text" , $this->allowedContent());
                 }, ARRAY_FILTER_USE_BOTH);
             } else {
                 $json['content'] =  $content;
