@@ -17,7 +17,7 @@ class FileFinder
     {
 
         $asProject = __DIR__ . "/../../vendor/";
-        $asVendor = __DIR__ . "/../../../vendor/";
+        $asVendor = __DIR__ . "/../../../../";
 
         return file_exists($asProject . "autoload.php") ? $asProject : $asVendor;
     }
